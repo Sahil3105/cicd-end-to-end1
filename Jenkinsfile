@@ -9,7 +9,7 @@ pipeline {
         
         stage('Checkout') {
             steps {
-                git credentialsId: 'new-git-credentials-id', 
+                git credentialsId: 'github-credentials-id', 
                     url: 'https://github.com/Sahil3105/cicd-end-to-end1.git',
                     branch: 'main'
             }
@@ -43,7 +43,7 @@ pipeline {
         stage('Update K8S manifest') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'new-git-credentials-id', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                    withCredentials([usernamePassword(credentialsId: 'github-credentials-id', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
                         sh '''
                         echo Updating Kubernetes manifest
                         # Print the original deploy.yaml for debugging
@@ -64,7 +64,9 @@ pipeline {
                         # Add, commit, and push changes
                         git add deploy/deploy.yaml
                         git commit -m "Updated the deploy.yaml with build number ${BUILD_NUMBER}" || echo "No changes to commit"
-                        git push origin main
+                        
+                        # Use credentials for the git push operation
+                        git push https://$GIT_USERNAME:$GIT_PASSWORD@github.com/Sahil3105/cicd-end-to-end1.git HEAD:main
                         '''
                     }
                 }
