@@ -57,10 +57,14 @@ pipeline {
                         echo "Updated deploy.yaml:"
                         cat deploy/deploy.yaml
                         
+                        # Configure Git with user details
+                        git config user.email "jenkins@example.com"
+                        git config user.name "Jenkins"
+                        
                         # Add, commit, and push changes
                         git add deploy/deploy.yaml
                         git commit -m "Updated the deploy.yaml with build number ${BUILD_NUMBER}" || echo "No changes to commit"
-                        git push https://github.com/iam-veeramalla/cicd-demo-manifests-repo.git HEAD:main
+                        git push origin main
                         '''
                     }
                 }
