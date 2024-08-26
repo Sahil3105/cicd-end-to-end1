@@ -19,8 +19,8 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    echo 'Build Docker Image'
-                    docker build -t sahil3105/ciandcd:${BUILD_NUMBER} .
+                    echo 'Building Docker Image'
+                    docker build -t sahil3105/ciandcd:${IMAGE_TAG} .
                     '''
                 }
             }
@@ -29,10 +29,13 @@ pipeline {
         stage('Push the artifacts'){
             steps {
                 script {
-                    sh '''
-                    echo 'Push to Repo'
-                    docker push sahil3105/ciandcd:${BUILD_NUMBER}
-                    '''
+                    withCredentials([usernamePassword(credentialsId: 'docker-cred', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh '''
+                        echo 'Pushing to Docker Hub'
+                        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+                        docker push sahil3105/ciandcd:${IMAGE_TAG}
+                        '''
+                    }
                 }
             }
         }
