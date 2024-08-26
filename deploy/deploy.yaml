@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: todo
-        image: sahil3105/ciandcd:v1
+        image: sahil3105/ciandcd:replaceImageTag
         ports:
         - containerPort: 8000
