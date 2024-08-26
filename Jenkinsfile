@@ -1,26 +1,25 @@
 pipeline {
-    
     agent any 
-    
+
     environment {
         IMAGE_TAG = "${BUILD_NUMBER}"
     }
-    
+
     stages {
         
         stage('Checkout'){
-           steps {
+            steps {
                 git credentialsId: 'f87a34a8-0e09-45e7-b9cf-6dc68feac670', 
-                url: 'https://github.com/Sahil3105/cicd-end-to-end1.git',
-                branch: 'main'
-           }
+                    url: 'https://github.com/Sahil3105/cicd-end-to-end1.git',
+                    branch: 'main'
+            }
         }
 
         stage('Build Docker'){
-            steps{
-                script{
+            steps {
+                script {
                     sh '''
-                    echo 'Buid Docker Image'
+                    echo 'Build Docker Image'
                     docker build -t sahil3105/ciandcd:${BUILD_NUMBER} .
                     '''
                 }
@@ -28,8 +27,8 @@ pipeline {
         }
 
         stage('Push the artifacts'){
-           steps{
-                script{
+            steps {
+                script {
                     sh '''
                     echo 'Push to Repo'
                     docker push sahil3105/ciandcd:${BUILD_NUMBER}
@@ -38,27 +37,19 @@ pipeline {
             }
         }
         
-        stage('Checkout K8S manifest SCM'){
+        stage('Update K8S manifest'){
             steps {
-                git credentialsId: 'f87a34a8-0e09-45e7-b9cf-6dc68feac670', 
-                url: 'deploy/deploy.yaml',
-                branch: 'main'
-            }
-        }
-        
-        stage('Update K8S manifest & push to Repo'){
-            steps {
-                script{
+                script {
                     withCredentials([usernamePassword(credentialsId: 'f87a34a8-0e09-45e7-b9cf-6dc68feac670', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
                         sh '''
-                        cat deploy.yaml
-                        sed -i '' "s/32/${BUILD_NUMBER}/g" deploy.yaml
-                        cat deploy.yaml
-                        git add deploy.yaml
-                        git commit -m 'Updated the deploy yaml | Jenkins Pipeline'
+                        echo 'Updating Kubernetes manifest'
+                        sed -i "s/32/${BUILD_NUMBER}/g" deploy/deploy.yaml
+                        cat deploy/deploy.yaml
+                        git add deploy/deploy.yaml
+                        git commit -m 'Updated the deploy.yaml with build number ${BUILD_NUMBER}'
                         git remote -v
                         git push https://github.com/iam-veeramalla/cicd-demo-manifests-repo.git HEAD:main
-                        '''                        
+                        '''
                     }
                 }
             }
